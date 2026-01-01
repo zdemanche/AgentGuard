@@ -260,36 +260,9 @@ We welcome contributions! Please see our contributing guidelines:
 
 ---
 
-## 🆘 Support
-
-- **Documentation**: [docs.agentguard.io](https://docs.agentguard.io)
-- **Email**: support@agentguard.io
-- **Discord**: [Join our community](https://discord.gg/agentguard)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/AgentGuard/issues)
-
----
-
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Built with modern React best practices
-- Inspired by enterprise security platforms
-- Designed for 2026 AI security challenges
-- Community-driven development
-
----
-
-## 📞 Contact
-
-**AgentGuard Enterprise**
-Website: [agentguard.io](https://agentguard.io)
-Email: hello@agentguard.io
-Twitter: [@AgentGuard](https://twitter.com/agentguard)
 
 ---
 
