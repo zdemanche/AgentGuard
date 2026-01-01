@@ -305,6 +305,66 @@ const AgentGuardEnterprise = () => {
     setNotifications(prev => [notification, ...prev].slice(0, 5));
   };
 
+  // Real-time data updates - makes dashboard feel alive
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnalytics(prev => {
+        // Randomly increment requests (simulates real traffic)
+        const requestIncrement = Math.floor(Math.random() * 15) + 5; // 5-20 requests
+        const newTotalRequests = prev.totalRequests + requestIncrement;
+
+        // Slightly vary cost (realistic fluctuation)
+        const costChange = (Math.random() - 0.5) * 2; // -1 to +1
+        const newTotalCost = Math.max(600, prev.totalCost + costChange);
+
+        // Vary response time slightly
+        const responseChange = (Math.random() - 0.5) * 0.2; // -0.1 to +0.1
+        const newAvgResponseTime = Math.max(1.5, Math.min(2.5, prev.avgResponseTime + responseChange));
+
+        // Occasionally prevent a threat
+        const threatPrevented = Math.random() > 0.85; // 15% chance
+        const newThreatsPrevented = threatPrevented ? prev.threatsPrevented + 1 : prev.threatsPrevented;
+
+        // Update trend data (shift and add new values)
+        const newRequests = [...prev.trends.requests.slice(1), prev.trends.requests[6] + Math.floor(Math.random() * 400) - 200];
+        const newCosts = [...prev.trends.costs.slice(1), Math.floor(newTotalCost)];
+        const newThreats = [...prev.trends.threats.slice(1), threatPrevented ? prev.trends.threats[6] + 1 : prev.trends.threats[6]];
+
+        return {
+          ...prev,
+          totalRequests: newTotalRequests,
+          totalCost: parseFloat(newTotalCost.toFixed(2)),
+          avgResponseTime: parseFloat(newAvgResponseTime.toFixed(2)),
+          threatsPrevented: newThreatsPrevented,
+          trends: {
+            requests: newRequests,
+            costs: newCosts,
+            threats: newThreats
+          }
+        };
+      });
+
+      // Update agent request counts
+      setAgents(prevAgents => prevAgents.map(agent => {
+        if (agent.status === 'active') {
+          const requestChange = Math.floor(Math.random() * 10) + 1; // 1-10 requests
+          const responseChange = (Math.random() - 0.5) * 0.1; // slight variation
+          const successChange = (Math.random() - 0.5) * 0.2; // slight variation
+
+          return {
+            ...agent,
+            requests: agent.requests + requestChange,
+            avgResponseTime: Math.max(1.0, Math.min(4.0, agent.avgResponseTime + responseChange)),
+            successRate: Math.max(95, Math.min(100, agent.successRate + successChange))
+          };
+        }
+        return agent;
+      }));
+    }, 3000); // Update every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Dashboard View
   const DashboardView = () => (
     <div className="space-y-6">
