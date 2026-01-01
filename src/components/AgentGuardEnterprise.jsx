@@ -22,6 +22,8 @@ const AgentGuardEnterprise = () => {
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [deploymentStep, setDeploymentStep] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [alertsViewed, setAlertsViewed] = useState(false);
 
   // Sample enterprise agents data
   const [agents, setAgents] = useState([
@@ -364,6 +366,18 @@ const AgentGuardEnterprise = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Close alerts panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showAlerts && !event.target.closest('.alerts-panel') && !event.target.closest('.alerts-button')) {
+        setShowAlerts(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAlerts]);
 
   // Dashboard View
   const DashboardView = () => (
@@ -1297,12 +1311,110 @@ const AgentGuardEnterprise = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="relative p-2 text-gray-600 hover:text-gray-900">
-                <AlertTriangle className="w-5 h-5" />
-                {threats.filter(t => t.status !== 'mitigated').length > 0 && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowAlerts(!showAlerts);
+                    if (!showAlerts) setAlertsViewed(true);
+                  }}
+                  className="alerts-button relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <AlertTriangle className="w-5 h-5" />
+                  {threats.filter(t => t.status !== 'mitigated').length > 0 && !alertsViewed && (
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  )}
+                </button>
+
+                {/* Alerts Dropdown Panel */}
+                {showAlerts && (
+                  <div className="alerts-panel absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div className="p-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Active Alerts</h3>
+                        <button
+                          onClick={() => setShowAlerts(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <XCircle className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {threats.filter(t => t.status !== 'mitigated').length} active threat{threats.filter(t => t.status !== 'mitigated').length !== 1 ? 's' : ''} requiring attention
+                      </p>
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto">
+                      {threats.filter(t => t.status !== 'mitigated').length > 0 ? (
+                        <div className="p-2">
+                          {threats.filter(t => t.status !== 'mitigated').map(threat => (
+                            <button
+                              key={threat.id}
+                              onClick={() => {
+                                setSelectedThreat(threat);
+                                setShowAlerts(false);
+                              }}
+                              className="w-full text-left p-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
+                                  threat.severity === 'critical' ? 'bg-red-500' :
+                                  threat.severity === 'high' ? 'bg-orange-500' :
+                                  'bg-yellow-500'
+                                }`}></div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-xs font-semibold uppercase ${
+                                      threat.severity === 'critical' ? 'text-red-700' :
+                                      threat.severity === 'high' ? 'text-orange-700' :
+                                      'text-yellow-700'
+                                    }`}>
+                                      {threat.severity}
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-900 truncate">
+                                      {threat.type}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 line-clamp-2">
+                                    {threat.description}
+                                  </p>
+                                  <div className="flex items-center gap-3 mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      Agent: {threat.agent}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      {new Date(threat.timestamp).toLocaleTimeString()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Eye className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center">
+                          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                          <p className="text-sm font-medium text-gray-900">All Clear!</p>
+                          <p className="text-xs text-gray-600 mt-1">No active threats at this time</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-3 border-t border-gray-200 bg-gray-50">
+                      <button
+                        onClick={() => {
+                          setActiveView('security');
+                          setShowAlerts(false);
+                        }}
+                        className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium text-center"
+                      >
+                        View All Threats →
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
+
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                   AD
