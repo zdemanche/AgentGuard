@@ -1516,10 +1516,30 @@ const AgentGuardEnterprise = () => {
   const AgentDetailModal = () => {
     if (!selectedAgent) return null;
 
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [editedAgent, setEditedAgent] = React.useState({ ...selectedAgent });
+
     const statusColors = {
       active: 'bg-green-100 text-green-800 border-green-300',
       warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
       inactive: 'bg-gray-100 text-gray-800 border-gray-300'
+    };
+
+    const handleSave = () => {
+      // Update the agent in the agents list
+      setAgents(prevAgents =>
+        prevAgents.map(agent =>
+          agent.id === editedAgent.id ? editedAgent : agent
+        )
+      );
+      setSelectedAgent(editedAgent);
+      setIsEditing(false);
+      addNotification('Agent updated successfully', 'success');
+    };
+
+    const handleCancel = () => {
+      setEditedAgent({ ...selectedAgent });
+      setIsEditing(false);
     };
 
     return (
@@ -1529,16 +1549,68 @@ const AgentGuardEnterprise = () => {
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[selectedAgent.status]}`}>
-                    {selectedAgent.status.toUpperCase()}
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {selectedAgent.environment}
-                  </span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h2>
-                <p className="text-gray-600 mt-1">{selectedAgent.department} • Version {selectedAgent.version}</p>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    {/* Status and Environment Selectors */}
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={editedAgent.status}
+                        onChange={(e) => setEditedAgent({ ...editedAgent, status: e.target.value })}
+                        className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[editedAgent.status]} cursor-pointer`}
+                      >
+                        <option value="active">ACTIVE</option>
+                        <option value="warning">WARNING</option>
+                        <option value="inactive">INACTIVE</option>
+                      </select>
+                      <select
+                        value={editedAgent.environment}
+                        onChange={(e) => setEditedAgent({ ...editedAgent, environment: e.target.value })}
+                        className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer border-0"
+                      >
+                        <option value="production">production</option>
+                        <option value="staging">staging</option>
+                        <option value="development">development</option>
+                      </select>
+                    </div>
+                    {/* Agent Name */}
+                    <input
+                      type="text"
+                      value={editedAgent.name}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, name: e.target.value })}
+                      className="text-2xl font-bold text-gray-900 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {/* Department and Version */}
+                    <div className="flex gap-4">
+                      <input
+                        type="text"
+                        value={editedAgent.department}
+                        onChange={(e) => setEditedAgent({ ...editedAgent, department: e.target.value })}
+                        placeholder="Department"
+                        className="text-gray-600 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <input
+                        type="text"
+                        value={editedAgent.version}
+                        onChange={(e) => setEditedAgent({ ...editedAgent, version: e.target.value })}
+                        placeholder="Version"
+                        className="text-gray-600 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[selectedAgent.status]}`}>
+                        {selectedAgent.status.toUpperCase()}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {selectedAgent.environment}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h2>
+                    <p className="text-gray-600 mt-1">{selectedAgent.department} • Version {selectedAgent.version}</p>
+                  </>
+                )}
               </div>
               <button
                 onClick={() => setSelectedAgent(null)}
@@ -1678,6 +1750,134 @@ const AgentGuardEnterprise = () => {
                 </div>
               </div>
             </div>
+
+            {/* Agent Configuration (Edit Mode) */}
+            {isEditing && (
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-blue-600" />
+                  Agent Configuration
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Requests */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Requests per Hour
+                    </label>
+                    <input
+                      type="number"
+                      value={editedAgent.requests || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, requests: parseInt(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Success Rate */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Success Rate (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={editedAgent.successRate || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, successRate: parseFloat(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Avg Response Time */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Avg Response Time (seconds)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editedAgent.avgResponseTime || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, avgResponseTime: parseFloat(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Cost Per Day */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Daily Cost ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editedAgent.costPerDay || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, costPerDay: parseFloat(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Security Score */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Security Score (0-100)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={editedAgent.securityScore || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, securityScore: parseInt(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Threats */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Active Threats
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editedAgent.threats || 0}
+                      onChange={(e) => setEditedAgent({ ...editedAgent, threats: parseInt(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Agent Actions / Description */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Agent Description / Actions
+                  </label>
+                  <textarea
+                    value={editedAgent.description || ''}
+                    onChange={(e) => setEditedAgent({ ...editedAgent, description: e.target.value })}
+                    placeholder="Describe what this agent does and its key actions..."
+                    rows="4"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
+                </div>
+
+                {/* Compliance Frameworks */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Compliance Frameworks (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editedAgent.compliance ? editedAgent.compliance.join(', ') : ''}
+                    onChange={(e) => setEditedAgent({
+                      ...editedAgent,
+                      compliance: e.target.value.split(',').map(f => f.trim()).filter(f => f)
+                    })}
+                    placeholder="SOC2, GDPR, HIPAA, PCI-DSS"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -1687,22 +1887,39 @@ const AgentGuardEnterprise = () => {
                 Agent ID: #{selectedAgent.id}
               </p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => setSelectedAgent(null)}
-                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveView('deployment');
-                    setSelectedAgent(null);
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  Manage Agent
-                </button>
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Save Changes
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setSelectedAgent(null)}
+                      className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Edit Agent
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
