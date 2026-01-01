@@ -79,33 +79,33 @@ const AgentGuardEnterprise = () => {
       id: 4,
       name: 'Code Review Assistant',
       department: 'Engineering',
-      status: 'warning',
-      environment: 'staging',
-      version: 'v2.0.0-beta',
+      status: 'active',
+      environment: 'production',
+      version: 'v2.0.0',
       requests: 3421,
-      avgResponseTime: 3.2,
-      successRate: 96.8,
+      avgResponseTime: 2.8,
+      successRate: 98.2,
       costPerDay: 156.78,
-      threats: 5,
-      lastDeployed: '2025-12-29T16:45:00Z',
-      compliance: ['SOC 2'],
-      securityScore: 89
+      threats: 0,
+      lastDeployed: '2026-01-01T08:30:00Z',
+      compliance: ['SOC 2', 'ISO 27001'],
+      securityScore: 96
     },
     {
       id: 5,
       name: 'Sales Intelligence',
       department: 'Sales',
-      status: 'inactive',
-      environment: 'development',
-      version: 'v1.0.0-alpha',
-      requests: 0,
-      avgResponseTime: 0,
-      successRate: 0,
-      costPerDay: 0,
+      status: 'active',
+      environment: 'production',
+      version: 'v1.2.0',
+      requests: 4256,
+      avgResponseTime: 1.9,
+      successRate: 97.8,
+      costPerDay: 112.45,
       threats: 0,
-      lastDeployed: null,
-      compliance: [],
-      securityScore: 0
+      lastDeployed: '2026-01-01T07:15:00Z',
+      compliance: ['SOC 2', 'GDPR'],
+      securityScore: 95
     }
   ]);
 
@@ -1512,6 +1512,205 @@ const AgentGuardEnterprise = () => {
     );
   };
 
+  // Agent Detail Modal
+  const AgentDetailModal = () => {
+    if (!selectedAgent) return null;
+
+    const statusColors = {
+      active: 'bg-green-100 text-green-800 border-green-300',
+      warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      inactive: 'bg-gray-100 text-gray-800 border-gray-300'
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[selectedAgent.status]}`}>
+                    {selectedAgent.status.toUpperCase()}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    {selectedAgent.environment}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h2>
+                <p className="text-gray-600 mt-1">{selectedAgent.department} • Version {selectedAgent.version}</p>
+              </div>
+              <button
+                onClick={() => setSelectedAgent(null)}
+                className="text-gray-400 hover:text-gray-600 ml-4"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="p-6 space-y-6">
+            {/* Performance Metrics */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <p className="text-sm text-blue-700 font-medium mb-1">Requests/hour</p>
+                  <p className="text-2xl font-bold text-blue-900">{selectedAgent.requests.toLocaleString()}</p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4">
+                  <p className="text-sm text-green-700 font-medium mb-1">Success Rate</p>
+                  <p className="text-2xl font-bold text-green-900">{selectedAgent.successRate.toFixed(1)}%</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <p className="text-sm text-purple-700 font-medium mb-1">Avg Response</p>
+                  <p className="text-2xl font-bold text-purple-900">{selectedAgent.avgResponseTime.toFixed(2)}s</p>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-4">
+                  <p className="text-sm text-orange-700 font-medium mb-1">Daily Cost</p>
+                  <p className="text-2xl font-bold text-orange-900">${selectedAgent.costPerDay.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Security & Compliance */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Security & Compliance</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-700">Security Score</p>
+                    <Shield className={`w-5 h-5 ${
+                      selectedAgent.securityScore >= 95 ? 'text-green-600' :
+                      selectedAgent.securityScore >= 85 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`} />
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900 mb-2">{selectedAgent.securityScore}/100</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${
+                        selectedAgent.securityScore >= 95 ? 'bg-green-600' :
+                        selectedAgent.securityScore >= 85 ? 'bg-yellow-600' :
+                        'bg-red-600'
+                      }`}
+                      style={{ width: `${selectedAgent.securityScore}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-700">Threats Blocked</p>
+                    <AlertTriangle className={`w-5 h-5 ${
+                      selectedAgent.threats === 0 ? 'text-green-600' : 'text-orange-600'
+                    }`} />
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900 mb-2">{selectedAgent.threats}</p>
+                  <p className="text-xs text-gray-600">
+                    {selectedAgent.threats === 0 ? 'No active threats' : 'Active threats detected'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Compliance Badges */}
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Compliance Frameworks</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedAgent.compliance && selectedAgent.compliance.length > 0 ? (
+                    selectedAgent.compliance.map(framework => (
+                      <span
+                        key={framework}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {framework}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">No compliance frameworks assigned</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Deployment Information */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Deployment Information</h3>
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between border-b border-gray-200 pb-2">
+                  <span className="text-sm font-medium text-gray-600">Environment</span>
+                  <span className="text-sm text-gray-900 font-semibold">{selectedAgent.environment}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-200 pb-2">
+                  <span className="text-sm font-medium text-gray-600">Version</span>
+                  <span className="text-sm text-gray-900 font-mono">{selectedAgent.version}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-200 pb-2">
+                  <span className="text-sm font-medium text-gray-600">Last Deployed</span>
+                  <span className="text-sm text-gray-900">
+                    {selectedAgent.lastDeployed ? new Date(selectedAgent.lastDeployed).toLocaleString() : 'Never'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-600">Department</span>
+                  <span className="text-sm text-gray-900">{selectedAgent.department}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cost Analysis */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Cost Analysis</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-xs text-green-700 font-medium mb-1">Daily</p>
+                  <p className="text-xl font-bold text-green-900">${selectedAgent.costPerDay.toFixed(2)}</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                  <p className="text-xs text-blue-700 font-medium mb-1">Monthly Est.</p>
+                  <p className="text-xl font-bold text-blue-900">${(selectedAgent.costPerDay * 30).toFixed(2)}</p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                  <p className="text-xs text-purple-700 font-medium mb-1">Yearly Est.</p>
+                  <p className="text-xl font-bold text-purple-900">${(selectedAgent.costPerDay * 365).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-gray-200 p-6 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-600">
+                Agent ID: #{selectedAgent.id}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedAgent(null)}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView('deployment');
+                    setSelectedAgent(null);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Manage Agent
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Threat Detail Modal
   const ThreatDetailModal = () => {
     if (!selectedThreat) return null;
@@ -1733,6 +1932,7 @@ const AgentGuardEnterprise = () => {
         {activeView === 'deployment' && <DeploymentView />}
       </main>
 
+      <AgentDetailModal />
       <ThreatDetailModal />
       <NotificationToast />
     </div>
