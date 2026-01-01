@@ -24,6 +24,8 @@ const AgentGuardEnterprise = () => {
   const [notifications, setNotifications] = useState([]);
   const [showAlerts, setShowAlerts] = useState(false);
   const [alertsViewed, setAlertsViewed] = useState(false);
+  const [isEditingAgent, setIsEditingAgent] = useState(false);
+  const [editedAgent, setEditedAgent] = useState(null);
 
   // Sample enterprise agents data
   const [agents, setAgents] = useState([
@@ -1516,9 +1518,6 @@ const AgentGuardEnterprise = () => {
   const AgentDetailModal = () => {
     if (!selectedAgent) return null;
 
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [editedAgent, setEditedAgent] = React.useState({ ...selectedAgent });
-
     const statusColors = {
       active: 'bg-green-100 text-green-800 border-green-300',
       warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -1533,14 +1532,22 @@ const AgentGuardEnterprise = () => {
         )
       );
       setSelectedAgent(editedAgent);
-      setIsEditing(false);
+      setIsEditingAgent(false);
+      setEditedAgent(null);
       addNotification('Agent updated successfully', 'success');
     };
 
     const handleCancel = () => {
-      setEditedAgent({ ...selectedAgent });
-      setIsEditing(false);
+      setEditedAgent(null);
+      setIsEditingAgent(false);
     };
+
+    const startEditing = () => {
+      setEditedAgent({ ...selectedAgent });
+      setIsEditingAgent(true);
+    };
+
+    const currentAgent = isEditingAgent && editedAgent ? editedAgent : selectedAgent;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1549,22 +1556,22 @@ const AgentGuardEnterprise = () => {
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                {isEditing ? (
+                {isEditingAgent ? (
                   <div className="space-y-4">
                     {/* Status and Environment Selectors */}
                     <div className="flex items-center gap-3">
                       <select
-                        value={editedAgent.status}
-                        onChange={(e) => setEditedAgent({ ...editedAgent, status: e.target.value })}
-                        className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[editedAgent.status]} cursor-pointer`}
+                        value={currentAgent.status}
+                        onChange={(e) => setEditedAgent({ ...currentAgent, status: e.target.value })}
+                        className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[currentAgent.status]} cursor-pointer`}
                       >
                         <option value="active">ACTIVE</option>
                         <option value="warning">WARNING</option>
                         <option value="inactive">INACTIVE</option>
                       </select>
                       <select
-                        value={editedAgent.environment}
-                        onChange={(e) => setEditedAgent({ ...editedAgent, environment: e.target.value })}
+                        value={currentAgent.environment}
+                        onChange={(e) => setEditedAgent({ ...currentAgent, environment: e.target.value })}
                         className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer border-0"
                       >
                         <option value="production">production</option>
@@ -1575,23 +1582,23 @@ const AgentGuardEnterprise = () => {
                     {/* Agent Name */}
                     <input
                       type="text"
-                      value={editedAgent.name}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, name: e.target.value })}
+                      value={currentAgent.name}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, name: e.target.value })}
                       className="text-2xl font-bold text-gray-900 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {/* Department and Version */}
                     <div className="flex gap-4">
                       <input
                         type="text"
-                        value={editedAgent.department}
-                        onChange={(e) => setEditedAgent({ ...editedAgent, department: e.target.value })}
+                        value={currentAgent.department}
+                        onChange={(e) => setEditedAgent({ ...currentAgent, department: e.target.value })}
                         placeholder="Department"
                         className="text-gray-600 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <input
                         type="text"
-                        value={editedAgent.version}
-                        onChange={(e) => setEditedAgent({ ...editedAgent, version: e.target.value })}
+                        value={currentAgent.version}
+                        onChange={(e) => setEditedAgent({ ...currentAgent, version: e.target.value })}
                         placeholder="Version"
                         className="text-gray-600 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                       />
@@ -1600,15 +1607,15 @@ const AgentGuardEnterprise = () => {
                 ) : (
                   <>
                     <div className="flex items-center gap-3 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[selectedAgent.status]}`}>
-                        {selectedAgent.status.toUpperCase()}
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[currentAgent.status]}`}>
+                        {currentAgent.status.toUpperCase()}
                       </span>
                       <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        {selectedAgent.environment}
+                        {currentAgent.environment}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h2>
-                    <p className="text-gray-600 mt-1">{selectedAgent.department} • Version {selectedAgent.version}</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{currentAgent.name}</h2>
+                    <p className="text-gray-600 mt-1">{currentAgent.department} • Version {currentAgent.version}</p>
                   </>
                 )}
               </div>
@@ -1629,19 +1636,19 @@ const AgentGuardEnterprise = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4">
                   <p className="text-sm text-blue-700 font-medium mb-1">Requests/hour</p>
-                  <p className="text-2xl font-bold text-blue-900">{selectedAgent.requests.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-blue-900">{currentAgent.requests.toLocaleString()}</p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
                   <p className="text-sm text-green-700 font-medium mb-1">Success Rate</p>
-                  <p className="text-2xl font-bold text-green-900">{selectedAgent.successRate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-green-900">{currentAgent.successRate.toFixed(1)}%</p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
                   <p className="text-sm text-purple-700 font-medium mb-1">Avg Response</p>
-                  <p className="text-2xl font-bold text-purple-900">{selectedAgent.avgResponseTime.toFixed(2)}s</p>
+                  <p className="text-2xl font-bold text-purple-900">{currentAgent.avgResponseTime.toFixed(2)}s</p>
                 </div>
                 <div className="bg-orange-50 rounded-lg p-4">
                   <p className="text-sm text-orange-700 font-medium mb-1">Daily Cost</p>
-                  <p className="text-2xl font-bold text-orange-900">${selectedAgent.costPerDay.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-orange-900">${currentAgent.costPerDay.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -1654,20 +1661,20 @@ const AgentGuardEnterprise = () => {
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-gray-700">Security Score</p>
                     <Shield className={`w-5 h-5 ${
-                      selectedAgent.securityScore >= 95 ? 'text-green-600' :
-                      selectedAgent.securityScore >= 85 ? 'text-yellow-600' :
+                      currentAgent.securityScore >= 95 ? 'text-green-600' :
+                      currentAgent.securityScore >= 85 ? 'text-yellow-600' :
                       'text-red-600'
                     }`} />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900 mb-2">{selectedAgent.securityScore}/100</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-2">{currentAgent.securityScore}/100</p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
-                        selectedAgent.securityScore >= 95 ? 'bg-green-600' :
-                        selectedAgent.securityScore >= 85 ? 'bg-yellow-600' :
+                        currentAgent.securityScore >= 95 ? 'bg-green-600' :
+                        currentAgent.securityScore >= 85 ? 'bg-yellow-600' :
                         'bg-red-600'
                       }`}
-                      style={{ width: `${selectedAgent.securityScore}%` }}
+                      style={{ width: `${currentAgent.securityScore}%` }}
                     />
                   </div>
                 </div>
@@ -1676,12 +1683,12 @@ const AgentGuardEnterprise = () => {
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-gray-700">Threats Blocked</p>
                     <AlertTriangle className={`w-5 h-5 ${
-                      selectedAgent.threats === 0 ? 'text-green-600' : 'text-orange-600'
+                      currentAgent.threats === 0 ? 'text-green-600' : 'text-orange-600'
                     }`} />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900 mb-2">{selectedAgent.threats}</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-2">{currentAgent.threats}</p>
                   <p className="text-xs text-gray-600">
-                    {selectedAgent.threats === 0 ? 'No active threats' : 'Active threats detected'}
+                    {currentAgent.threats === 0 ? 'No active threats' : 'Active threats detected'}
                   </p>
                 </div>
               </div>
@@ -1690,8 +1697,8 @@ const AgentGuardEnterprise = () => {
               <div className="mt-4">
                 <p className="text-sm font-medium text-gray-700 mb-2">Compliance Frameworks</p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedAgent.compliance && selectedAgent.compliance.length > 0 ? (
-                    selectedAgent.compliance.map(framework => (
+                  {currentAgent.compliance && currentAgent.compliance.length > 0 ? (
+                    currentAgent.compliance.map(framework => (
                       <span
                         key={framework}
                         className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1"
@@ -1713,21 +1720,21 @@ const AgentGuardEnterprise = () => {
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between border-b border-gray-200 pb-2">
                   <span className="text-sm font-medium text-gray-600">Environment</span>
-                  <span className="text-sm text-gray-900 font-semibold">{selectedAgent.environment}</span>
+                  <span className="text-sm text-gray-900 font-semibold">{currentAgent.environment}</span>
                 </div>
                 <div className="flex justify-between border-b border-gray-200 pb-2">
                   <span className="text-sm font-medium text-gray-600">Version</span>
-                  <span className="text-sm text-gray-900 font-mono">{selectedAgent.version}</span>
+                  <span className="text-sm text-gray-900 font-mono">{currentAgent.version}</span>
                 </div>
                 <div className="flex justify-between border-b border-gray-200 pb-2">
                   <span className="text-sm font-medium text-gray-600">Last Deployed</span>
                   <span className="text-sm text-gray-900">
-                    {selectedAgent.lastDeployed ? new Date(selectedAgent.lastDeployed).toLocaleString() : 'Never'}
+                    {currentAgent.lastDeployed ? new Date(currentAgent.lastDeployed).toLocaleString() : 'Never'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-gray-600">Department</span>
-                  <span className="text-sm text-gray-900">{selectedAgent.department}</span>
+                  <span className="text-sm text-gray-900">{currentAgent.department}</span>
                 </div>
               </div>
             </div>
@@ -1738,21 +1745,21 @@ const AgentGuardEnterprise = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                   <p className="text-xs text-green-700 font-medium mb-1">Daily</p>
-                  <p className="text-xl font-bold text-green-900">${selectedAgent.costPerDay.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-green-900">${currentAgent.costPerDay.toFixed(2)}</p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                   <p className="text-xs text-blue-700 font-medium mb-1">Monthly Est.</p>
-                  <p className="text-xl font-bold text-blue-900">${(selectedAgent.costPerDay * 30).toFixed(2)}</p>
+                  <p className="text-xl font-bold text-blue-900">${(currentAgent.costPerDay * 30).toFixed(2)}</p>
                 </div>
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
                   <p className="text-xs text-purple-700 font-medium mb-1">Yearly Est.</p>
-                  <p className="text-xl font-bold text-purple-900">${(selectedAgent.costPerDay * 365).toFixed(2)}</p>
+                  <p className="text-xl font-bold text-purple-900">${(currentAgent.costPerDay * 365).toFixed(2)}</p>
                 </div>
               </div>
             </div>
 
             {/* Agent Configuration (Edit Mode) */}
-            {isEditing && (
+            {isEditingAgent && (
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-blue-600" />
@@ -1766,8 +1773,8 @@ const AgentGuardEnterprise = () => {
                     </label>
                     <input
                       type="number"
-                      value={editedAgent.requests || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, requests: parseInt(e.target.value) || 0 })}
+                      value={currentAgent.requests || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, requests: parseInt(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1782,8 +1789,8 @@ const AgentGuardEnterprise = () => {
                       step="0.1"
                       min="0"
                       max="100"
-                      value={editedAgent.successRate || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, successRate: parseFloat(e.target.value) || 0 })}
+                      value={currentAgent.successRate || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, successRate: parseFloat(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1796,8 +1803,8 @@ const AgentGuardEnterprise = () => {
                     <input
                       type="number"
                       step="0.01"
-                      value={editedAgent.avgResponseTime || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, avgResponseTime: parseFloat(e.target.value) || 0 })}
+                      value={currentAgent.avgResponseTime || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, avgResponseTime: parseFloat(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1810,8 +1817,8 @@ const AgentGuardEnterprise = () => {
                     <input
                       type="number"
                       step="0.01"
-                      value={editedAgent.costPerDay || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, costPerDay: parseFloat(e.target.value) || 0 })}
+                      value={currentAgent.costPerDay || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, costPerDay: parseFloat(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1825,8 +1832,8 @@ const AgentGuardEnterprise = () => {
                       type="number"
                       min="0"
                       max="100"
-                      value={editedAgent.securityScore || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, securityScore: parseInt(e.target.value) || 0 })}
+                      value={currentAgent.securityScore || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, securityScore: parseInt(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1839,8 +1846,8 @@ const AgentGuardEnterprise = () => {
                     <input
                       type="number"
                       min="0"
-                      value={editedAgent.threats || 0}
-                      onChange={(e) => setEditedAgent({ ...editedAgent, threats: parseInt(e.target.value) || 0 })}
+                      value={currentAgent.threats || 0}
+                      onChange={(e) => setEditedAgent({ ...currentAgent, threats: parseInt(e.target.value) || 0 })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1852,8 +1859,8 @@ const AgentGuardEnterprise = () => {
                     Agent Description / Actions
                   </label>
                   <textarea
-                    value={editedAgent.description || ''}
-                    onChange={(e) => setEditedAgent({ ...editedAgent, description: e.target.value })}
+                    value={currentAgent.description || ''}
+                    onChange={(e) => setEditedAgent({ ...currentAgent, description: e.target.value })}
                     placeholder="Describe what this agent does and its key actions..."
                     rows="4"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -1867,9 +1874,9 @@ const AgentGuardEnterprise = () => {
                   </label>
                   <input
                     type="text"
-                    value={editedAgent.compliance ? editedAgent.compliance.join(', ') : ''}
+                    value={currentAgent.compliance ? currentAgent.compliance.join(', ') : ''}
                     onChange={(e) => setEditedAgent({
-                      ...editedAgent,
+                      ...currentAgent,
                       compliance: e.target.value.split(',').map(f => f.trim()).filter(f => f)
                     })}
                     placeholder="SOC2, GDPR, HIPAA, PCI-DSS"
@@ -1887,7 +1894,7 @@ const AgentGuardEnterprise = () => {
                 Agent ID: #{selectedAgent.id}
               </p>
               <div className="flex gap-3">
-                {isEditing ? (
+                {isEditingAgent ? (
                   <>
                     <button
                       onClick={handleCancel}
@@ -1912,7 +1919,7 @@ const AgentGuardEnterprise = () => {
                       Close
                     </button>
                     <button
-                      onClick={() => setIsEditing(true)}
+                      onClick={startEditing}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
                     >
                       <Settings className="w-4 h-4" />
