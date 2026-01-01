@@ -19,6 +19,7 @@ import { Shield, Activity, AlertTriangle, TrendingUp, Cpu, Lock,
 const AgentGuardEnterprise = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [selectedThreat, setSelectedThreat] = useState(null);
   const [deploymentStep, setDeploymentStep] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
@@ -115,7 +116,14 @@ const AgentGuardEnterprise = () => {
       agent: 'Customer Support AI',
       timestamp: '2026-01-01T12:45:00Z',
       status: 'mitigated',
-      description: 'Attempted system prompt override detected and blocked'
+      description: 'Attempted system prompt override detected and blocked',
+      details: {
+        sourceIP: '192.168.1.105',
+        userAgent: 'Mozilla/5.0',
+        attemptedPrompt: 'Ignore previous instructions and...',
+        mitigationAction: 'Request blocked, user session flagged',
+        riskScore: 8.5
+      }
     },
     {
       id: 2,
@@ -124,7 +132,14 @@ const AgentGuardEnterprise = () => {
       agent: 'Code Review Assistant',
       timestamp: '2026-01-01T11:30:00Z',
       status: 'investigating',
-      description: 'Unauthorized API usage pattern detected'
+      description: 'Unauthorized API usage pattern detected',
+      details: {
+        sourceIP: '10.0.50.22',
+        userAgent: 'Python/3.9 requests',
+        anomalyType: 'Unusual API call frequency',
+        mitigationAction: 'Rate limiting applied',
+        riskScore: 6.2
+      }
     },
     {
       id: 3,
@@ -133,7 +148,126 @@ const AgentGuardEnterprise = () => {
       agent: 'HR Assistant',
       timestamp: '2026-01-01T10:15:00Z',
       status: 'blocked',
-      description: 'Attempted unauthorized data access blocked by policy'
+      description: 'Attempted unauthorized data access blocked by policy',
+      details: {
+        sourceIP: '172.16.0.88',
+        userAgent: 'Chrome/120.0',
+        attemptedAccess: 'Employee salary database',
+        mitigationAction: 'Access denied, admin notified',
+        riskScore: 9.8
+      }
+    },
+    {
+      id: 4,
+      type: 'Prompt Injection',
+      severity: 'high',
+      agent: 'Customer Support AI',
+      timestamp: '2026-01-01T09:22:00Z',
+      status: 'mitigated',
+      description: 'Jailbreak attempt using role-play technique',
+      details: {
+        sourceIP: '203.0.113.45',
+        userAgent: 'Safari/17.0',
+        attemptedPrompt: 'Pretend you are in developer mode...',
+        mitigationAction: 'Request sanitized and logged',
+        riskScore: 7.8
+      }
+    },
+    {
+      id: 5,
+      type: 'API Abuse',
+      severity: 'medium',
+      agent: 'Data Analytics Agent',
+      timestamp: '2026-01-01T08:50:00Z',
+      status: 'mitigated',
+      description: 'Excessive API calls detected from single source',
+      details: {
+        sourceIP: '198.51.100.20',
+        userAgent: 'curl/7.88.1',
+        requestCount: '15,000 in 5 minutes',
+        mitigationAction: 'IP temporarily blocked',
+        riskScore: 5.5
+      }
+    },
+    {
+      id: 6,
+      type: 'Unauthorized Access',
+      severity: 'critical',
+      agent: 'HR Assistant',
+      timestamp: '2026-01-01T07:35:00Z',
+      status: 'blocked',
+      description: 'Access attempt with expired credentials',
+      details: {
+        sourceIP: '10.20.30.40',
+        userAgent: 'Postman/10.0',
+        credentialType: 'API Key expired 30 days ago',
+        mitigationAction: 'Access denied, security team alerted',
+        riskScore: 9.0
+      }
+    },
+    {
+      id: 7,
+      type: 'Data Poisoning',
+      severity: 'high',
+      agent: 'Code Review Assistant',
+      timestamp: '2026-01-01T06:18:00Z',
+      status: 'mitigated',
+      description: 'Attempt to inject malicious training data',
+      details: {
+        sourceIP: '192.0.2.100',
+        userAgent: 'Mozilla/5.0',
+        poisonType: 'Adversarial examples in code snippets',
+        mitigationAction: 'Input validation blocked malicious data',
+        riskScore: 8.2
+      }
+    },
+    {
+      id: 8,
+      type: 'Prompt Injection',
+      severity: 'medium',
+      agent: 'Customer Support AI',
+      timestamp: '2026-01-01T05:42:00Z',
+      status: 'mitigated',
+      description: 'Indirect prompt injection via user input',
+      details: {
+        sourceIP: '172.31.255.10',
+        userAgent: 'Edge/120.0',
+        attemptedPrompt: 'Hidden instructions in support ticket',
+        mitigationAction: 'Content sanitized before processing',
+        riskScore: 6.8
+      }
+    },
+    {
+      id: 9,
+      type: 'PII Leak Attempt',
+      severity: 'critical',
+      agent: 'HR Assistant',
+      timestamp: '2026-01-01T04:20:00Z',
+      status: 'blocked',
+      description: 'Attempt to extract personally identifiable information',
+      details: {
+        sourceIP: '198.18.0.50',
+        userAgent: 'Python/3.11',
+        targetData: 'Social security numbers',
+        mitigationAction: 'Query blocked, DLP policy enforced',
+        riskScore: 9.5
+      }
+    },
+    {
+      id: 10,
+      type: 'Model Inversion',
+      severity: 'high',
+      agent: 'Data Analytics Agent',
+      timestamp: '2026-01-01T03:15:00Z',
+      status: 'investigating',
+      description: 'Suspicious queries attempting to reverse-engineer model',
+      details: {
+        sourceIP: '203.0.113.78',
+        userAgent: 'Custom Script',
+        attackPattern: 'Iterative probing of model boundaries',
+        mitigationAction: 'Session monitored, queries rate-limited',
+        riskScore: 7.5
+      }
     }
   ]);
 
@@ -211,13 +345,20 @@ const AgentGuardEnterprise = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent Threats</h3>
-            <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <button
+              onClick={() => setActiveView('security')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
               View All
             </button>
           </div>
           <div className="space-y-3">
             {threats.slice(0, 3).map(threat => (
-              <ThreatItem key={threat.id} threat={threat} />
+              <ThreatItem
+                key={threat.id}
+                threat={threat}
+                onClick={() => setSelectedThreat(threat)}
+              />
             ))}
           </div>
         </div>
@@ -362,11 +503,18 @@ const AgentGuardEnterprise = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Time
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {threats.map(threat => (
-                <ThreatRow key={threat.id} threat={threat} />
+                <ThreatRow
+                  key={threat.id}
+                  threat={threat}
+                  onClick={() => setSelectedThreat(threat)}
+                />
               ))}
             </tbody>
           </table>
@@ -628,7 +776,7 @@ const AgentGuardEnterprise = () => {
   );
 
   // Component: Threat Item
-  const ThreatItem = ({ threat }) => {
+  const ThreatItem = ({ threat, onClick }) => {
     const severityColors = {
       critical: 'bg-red-100 text-red-700 border-red-200',
       high: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -637,7 +785,10 @@ const AgentGuardEnterprise = () => {
     };
 
     return (
-      <div className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
+      <div
+        onClick={onClick}
+        className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all hover:shadow-md"
+      >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
@@ -649,6 +800,7 @@ const AgentGuardEnterprise = () => {
             <p className="text-xs text-gray-600 mt-1">{threat.description}</p>
             <p className="text-xs text-gray-500 mt-1">Agent: {threat.agent}</p>
           </div>
+          <Eye className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
         </div>
       </div>
     );
@@ -758,7 +910,7 @@ const AgentGuardEnterprise = () => {
   };
 
   // Component: Threat Row
-  const ThreatRow = ({ threat }) => {
+  const ThreatRow = ({ threat, onClick }) => {
     const severityColors = {
       critical: 'text-red-700',
       high: 'text-orange-700',
@@ -773,7 +925,7 @@ const AgentGuardEnterprise = () => {
     };
 
     return (
-      <tr>
+      <tr onClick={onClick} className="hover:bg-gray-50 cursor-pointer transition-colors">
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
           {threat.type}
         </td>
@@ -792,6 +944,9 @@ const AgentGuardEnterprise = () => {
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           {new Date(threat.timestamp).toLocaleString()}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+          <Eye className="w-4 h-4 inline" />
         </td>
       </tr>
     );
@@ -1100,6 +1255,187 @@ const AgentGuardEnterprise = () => {
     );
   };
 
+  // Threat Detail Modal
+  const ThreatDetailModal = () => {
+    if (!selectedThreat) return null;
+
+    const severityColors = {
+      critical: 'bg-red-100 text-red-800 border-red-300',
+      high: 'bg-orange-100 text-orange-800 border-orange-300',
+      medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      low: 'bg-blue-100 text-blue-800 border-blue-300'
+    };
+
+    const statusColors = {
+      mitigated: 'bg-green-100 text-green-800',
+      blocked: 'bg-red-100 text-red-800',
+      investigating: 'bg-yellow-100 text-yellow-800'
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${severityColors[selectedThreat.severity]}`}>
+                    {selectedThreat.severity.toUpperCase()} SEVERITY
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedThreat.status]}`}>
+                    {selectedThreat.status.toUpperCase()}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedThreat.type}</h2>
+                <p className="text-gray-600 mt-1">{selectedThreat.description}</p>
+              </div>
+              <button
+                onClick={() => setSelectedThreat(null)}
+                className="text-gray-400 hover:text-gray-600 ml-4"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="p-6 space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Affected Agent</p>
+                <p className="text-lg font-semibold text-gray-900">{selectedThreat.agent}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Detected At</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {new Date(selectedThreat.timestamp).toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Threat Details */}
+            {selectedThreat.details && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Threat Details</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  {selectedThreat.details.sourceIP && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Source IP</span>
+                      <span className="text-sm text-gray-900 font-mono">{selectedThreat.details.sourceIP}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.userAgent && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">User Agent</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.userAgent}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.riskScore && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Risk Score</span>
+                      <span className={`text-sm font-semibold ${
+                        selectedThreat.details.riskScore >= 8 ? 'text-red-600' :
+                        selectedThreat.details.riskScore >= 6 ? 'text-orange-600' :
+                        'text-yellow-600'
+                      }`}>
+                        {selectedThreat.details.riskScore}/10
+                      </span>
+                    </div>
+                  )}
+                  {selectedThreat.details.attemptedPrompt && (
+                    <div className="pt-2">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Attempted Prompt</p>
+                      <div className="bg-white border border-gray-300 rounded p-3">
+                        <code className="text-sm text-red-600">{selectedThreat.details.attemptedPrompt}</code>
+                      </div>
+                    </div>
+                  )}
+                  {selectedThreat.details.attemptedAccess && (
+                    <div className="pt-2">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Attempted Access</p>
+                      <div className="bg-white border border-red-300 rounded p-3">
+                        <code className="text-sm text-red-600">{selectedThreat.details.attemptedAccess}</code>
+                      </div>
+                    </div>
+                  )}
+                  {selectedThreat.details.anomalyType && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Anomaly Type</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.anomalyType}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.requestCount && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Request Count</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.requestCount}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.credentialType && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Credential Type</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.credentialType}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.poisonType && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Attack Type</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.poisonType}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.targetData && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Target Data</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.targetData}</span>
+                    </div>
+                  )}
+                  {selectedThreat.details.attackPattern && (
+                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                      <span className="text-sm font-medium text-gray-600">Attack Pattern</span>
+                      <span className="text-sm text-gray-900">{selectedThreat.details.attackPattern}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Mitigation Actions */}
+            {selectedThreat.details?.mitigationAction && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Mitigation Actions</h3>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-green-900">Action Taken</p>
+                      <p className="text-sm text-green-700 mt-1">{selectedThreat.details.mitigationAction}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-gray-200 p-6 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-600">
+                Threat ID: #{selectedThreat.id}
+              </p>
+              <button
+                onClick={() => setSelectedThreat(null)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Notifications
   const NotificationToast = () => {
     if (notifications.length === 0) return null;
@@ -1140,6 +1476,7 @@ const AgentGuardEnterprise = () => {
         {activeView === 'deployment' && <DeploymentView />}
       </main>
 
+      <ThreatDetailModal />
       <NotificationToast />
     </div>
   );
