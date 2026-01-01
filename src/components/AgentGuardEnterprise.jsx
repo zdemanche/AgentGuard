@@ -312,6 +312,8 @@ const AgentGuardEnterprise = () => {
   // Real-time data updates - makes dashboard feel alive
   useEffect(() => {
     const interval = setInterval(() => {
+      // Pause updates when editing an agent to prevent scroll jumping
+      if (isEditingAgent) return;
       setAnalytics(prev => {
         // Randomly increment requests (simulates real traffic)
         const requestIncrement = Math.floor(Math.random() * 15) + 5; // 5-20 requests
@@ -452,7 +454,7 @@ const AgentGuardEnterprise = () => {
     }, 3000); // Update every 3 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isEditingAgent]);
 
   // Close alerts panel when clicking outside
   useEffect(() => {
