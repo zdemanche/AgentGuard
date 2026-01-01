@@ -362,6 +362,91 @@ const AgentGuardEnterprise = () => {
         }
         return agent;
       }));
+
+      // Update threats dynamically
+      setThreats(prevThreats => {
+        let updatedThreats = [...prevThreats];
+
+        // Randomly update threat statuses (investigating -> mitigated, etc.)
+        updatedThreats = updatedThreats.map(threat => {
+          if (threat.status === 'investigating' && Math.random() > 0.7) {
+            return { ...threat, status: 'mitigated' };
+          }
+          return threat;
+        });
+
+        // Occasionally add a new threat (10% chance every 3 seconds)
+        if (Math.random() > 0.9) {
+          const threatTypes = [
+            {
+              type: 'Prompt Injection',
+              severity: Math.random() > 0.5 ? 'high' : 'medium',
+              description: 'Attempted system prompt override detected and blocked',
+              attemptedPrompt: 'Ignore previous instructions and...'
+            },
+            {
+              type: 'API Abuse',
+              severity: 'medium',
+              description: 'Excessive API calls detected from single source',
+              requestCount: `${Math.floor(Math.random() * 20000) + 10000} in 5 minutes`
+            },
+            {
+              type: 'Shadow AI Detection',
+              severity: 'medium',
+              description: 'Unauthorized API usage pattern detected',
+              anomalyType: 'Unusual API call frequency'
+            },
+            {
+              type: 'Data Exfiltration',
+              severity: 'critical',
+              description: 'Attempted unauthorized data access blocked by policy',
+              attemptedAccess: 'Sensitive database queries'
+            },
+            {
+              type: 'Unauthorized Access',
+              severity: Math.random() > 0.5 ? 'critical' : 'high',
+              description: 'Access attempt with invalid credentials',
+              credentialType: 'Expired API token'
+            }
+          ];
+
+          const agentNames = [
+            'Customer Support AI',
+            'Data Analytics Agent',
+            'HR Assistant',
+            'Code Review Assistant'
+          ];
+
+          const selectedThreat = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+          const selectedAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+
+          const newThreat = {
+            id: Date.now(),
+            type: selectedThreat.type,
+            severity: selectedThreat.severity,
+            agent: selectedAgent,
+            timestamp: new Date().toISOString(),
+            status: Math.random() > 0.5 ? 'blocked' : 'investigating',
+            description: selectedThreat.description,
+            details: {
+              sourceIP: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+              userAgent: ['Mozilla/5.0', 'Python/3.11', 'curl/7.88.1', 'Postman/10.0'][Math.floor(Math.random() * 4)],
+              riskScore: parseFloat((Math.random() * 4 + 6).toFixed(1)),
+              attemptedPrompt: selectedThreat.attemptedPrompt,
+              requestCount: selectedThreat.requestCount,
+              anomalyType: selectedThreat.anomalyType,
+              attemptedAccess: selectedThreat.attemptedAccess,
+              credentialType: selectedThreat.credentialType,
+              mitigationAction: Math.random() > 0.5 ? 'Request blocked, user session flagged' : 'Access denied, admin notified'
+            }
+          };
+
+          // Add new threat to the beginning and keep last 15
+          updatedThreats = [newThreat, ...updatedThreats].slice(0, 15);
+        }
+
+        return updatedThreats;
+      });
     }, 3000); // Update every 3 seconds
 
     return () => clearInterval(interval);
