@@ -270,6 +270,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for Enterprise AI Security**
 
-[Website](https://agentguard.io) • [Documentation](https://docs.agentguard.io) • [Blog](https://blog.agentguard.io) • [Twitter](https://twitter.com/agentguard)
+[Website](https://agentguard.io) • [Documentation](https://docs.agentguard.io)
 
 </div>
